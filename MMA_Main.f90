@@ -1,4 +1,4 @@
-program ejemplo
+program Example
     use MMA_variables
     use MMA_Routines
     implicit none
@@ -78,5 +78,4 @@ program ejemplo
     write(unit=*, fmt=*) outvector2
     write(unit=*, fmt=*) 'xval'
     write(unit=*, fmt=*) xval
-    
-end program ejemplo
+end program Example
