@@ -1,5 +1,4 @@
 module MMA_Routines
-
     implicit none
     ! Base routines
     interface Zeros
@@ -157,117 +156,116 @@ contains
         !                z >= 0,   y_i >= 0,         i = 1,...,m                                !
         ! INPUT:                                                                                !
         !                                                                                       !
-        !   m    = The number of general constraints.                                           ! scalar
-        !   n    = The number of variables x_j.                                                 ! scalar
-        !  iter  = Current iteration number ( =1 the first time mmasub is called).              ! scalar
-        !  xval  = Column vector with the current values of the variables x_j.                  ! vector
-        !  xmin  = Column vector with the lower bounds for the variables x_j.                   ! vector
-        !  xmax  = Column vector with the upper bounds for the variables x_j.                   ! vector
-        !  xold1 = xval, one iteration ago (provided that iter>1).                              ! vector 
-        !  xold2 = xval, two iterations ago (provided that iter>2).                             ! vector
-        !  f0val = The value of the objective function f_0 at xval.                             ! vector
-        !  df0dx = Column vector with the derivatives of the objective function                 ! vector
+        !   m    = The number of general constraints.                                           ! 
+        !   n    = The number of variables x_j.                                                 ! 
+        !  iter  = Current iteration number ( =1 the first time mmasub is called).              ! 
+        !  xval  = Column vector with the current values of the variables x_j.                  ! 
+        !  xmin  = Column vector with the lower bounds for the variables x_j.                   ! 
+        !  xmax  = Column vector with the upper bounds for the variables x_j.                   ! 
+        !  xold1 = xval, one iteration ago (provided that iter>1).                              !  
+        !  xold2 = xval, two iterations ago (provided that iter>2).                             ! 
+        !  f0val = The value of the objective function f_0 at xval.                             ! 
+        !  df0dx = Column vector with the derivatives of the objective function                 ! 
         !          f_0 with respect to the variables x_j, calculated at xval.                   !
-        !  fval  = Column vector with the values of the constraint functions f_i,               ! vector
+        !  fval  = Column vector with the values of the constraint functions f_i,               ! 
         !          calculated at xval.                                                          !
-        !  dfdx  = (m x n)-matrix with the derivatives of the constraint functions              ! matrix
+        !  dfdx  = (m x n)-matrix with the derivatives of the constraint functions              ! 
         !          f_i with respect to the variables x_j, calculated at xval.                   ! 
         !          dfdx(i,j) = the derivative of f_i with respect to x_j.                       !
-        !  low   = Column vector with the lower asymptotes from the previous                    ! vector
+        !  low   = Column vector with the lower asymptotes from the previous                    ! 
         !          iteration (provided that iter>1).                                            !
-        !  upp   = Column vector with the upper asymptotes from the previous                    ! vector
+        !  upp   = Column vector with the upper asymptotes from the previous                    ! 
         !          iteration (provided that iter>1).                                            !
-        !  a0    = The constants a_0 in the term a_0*z.                                         ! vector
-        !  a     = Column vector with the constants a_i in the terms a_i*z.                     ! vector
-        !  c     = Column vector with the constants c_i in the terms c_i*y_i.                   ! vector
-        !  d     = Column vector with the constants d_i in the terms 0.5*d_i*(y_i)^2.           ! vector
+        !  a0    = The constants a_0 in the term a_0*z.                                         ! 
+        !  a     = Column vector with the constants a_i in the terms a_i*z.                     ! 
+        !  c     = Column vector with the constants c_i in the terms c_i*y_i.                   ! 
+        !  d     = Column vector with the constants d_i in the terms 0.5*d_i*(y_i)^2.           ! 
         !                                                                                       !
         ! OUTPUT:                                                                               !
         !                                                                                       !
-        !  xmma  = Column vector with the optimal values of the variables x_j                   ! vector
+        !  xmma  = Column vector with the optimal values of the variables x_j                   ! 
         !          in the current MMA subproblem.                                               ! 
-        !  ymma  = Column vector with the optimal values of the variables y_i                   ! vector
+        !  ymma  = Column vector with the optimal values of the variables y_i                   ! 
         !          in the current MMA subproblem.                                               !
-        !  zmma  = Scalar with the optimal value of the variable z                              ! vector
+        !  zmma  = Scalar with the optimal value of the variable z                              ! 
         !          in the current MMA subproblem.                                               !
-        !  lam   = Lagrange multipliers for the m general MMA constraints.                      ! vector
-        !  xsi   = Lagrange multipliers for the n constraints alfa_j - x_j <= 0.                ! vector
-        !  eta   = Lagrange multipliers for the n constraints x_j - beta_j <= 0.                ! vector
-        !   mu   = Lagrange multipliers for the m constraints -y_i <= 0.                        ! vector
-        !  zet   = Lagrange multiplier for the single constraint -z <= 0.                       ! scalar
-        !   s    = Slack variables for the m general MMA constraints.                           ! vector
-        !  low   = Column vector with the lower asymptotes, calculated and used                 ! vector
+        !  lam   = Lagrange multipliers for the m general MMA constraints.                      ! 
+        !  xsi   = Lagrange multipliers for the n constraints alfa_j - x_j <= 0.                ! 
+        !  eta   = Lagrange multipliers for the n constraints x_j - beta_j <= 0.                ! 
+        !   mu   = Lagrange multipliers for the m constraints -y_i <= 0.                        ! 
+        !  zet   = Lagrange multiplier for the single constraint -z <= 0.                       ! 
+        !   s    = Slack variables for the m general MMA constraints.                           ! 
+        !  low   = Column vector with the lower asymptotes, calculated and used                 ! 
         !          in the current MMA subproblem.                                               !
-        !  upp   = Column vector with the upper asymptotes, calculated and used                 ! vector
+        !  upp   = Column vector with the upper asymptotes, calculated and used                 ! 
         !          in the current MMA subproblem.                                               !
         ! ------------------------------------------------------------------------------------- !
         ! Output Arguments
-        real, dimension(:,:), allocatable, intent(out)  :: xmma                     ! vector
-        real, dimension(:,:), allocatable, intent(out)  :: ymma                     ! vector
-        real, intent(out)                               :: zmma                     ! scalar
-        real, dimension(:,:), allocatable, intent(out)  :: lam                      ! vector
-        real, dimension(:,:), allocatable, intent(out)  :: xsi                      ! vector
-        real, dimension(:,:), allocatable, intent(out)  :: eta                      ! vector
-        real, dimension(:,:), allocatable, intent(out)  :: mu                       ! vector
-        real, intent(out)                               :: zet                      ! scalar
-        real, dimension(:,:), allocatable, intent(out)  :: s                        ! vector
+        real, dimension(:,:), allocatable, intent(out)  :: xmma                 
+        real, dimension(:,:), allocatable, intent(out)  :: ymma                  
+        real, intent(out)                               :: zmma                     
+        real, dimension(:,:), allocatable, intent(out)  :: lam                      
+        real, dimension(:,:), allocatable, intent(out)  :: xsi                      
+        real, dimension(:,:), allocatable, intent(out)  :: eta                      
+        real, dimension(:,:), allocatable, intent(out)  :: mu                       
+        real, intent(out)                               :: zet                      
+        real, dimension(:,:), allocatable, intent(out)  :: s                        
         ! Input Arguments
-        integer, intent(in)                             :: m                        ! scalar
-        integer, intent(in)                             :: n                        ! scalar
-        integer, intent(in)                             :: iter                     ! scalar
-        real, intent(in)                                :: a0                       ! scalar
-        real, intent(in)                                :: f0val                    ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: fval                     ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: xval                     ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: xmin                     ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: xmax                     ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: xold1                    ! vector 
-        real, dimension(:,:), allocatable, intent(in)   :: xold2                    ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: df0dx                    ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: dfdx                     ! matrix
-        real, dimension(:,:), allocatable, intent(inout):: low                      ! vector
-        real, dimension(:,:), allocatable, intent(inout):: upp                      ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: a                        ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: c                        ! vector
-        real, dimension(:,:), allocatable, intent(in)   :: d                        ! vector
+        integer, intent(in)                             :: m                        
+        integer, intent(in)                             :: n                        
+        real, intent(in)                                :: a0                       
+        real, intent(in)                                :: f0val                    
+        real, dimension(:,:), allocatable, intent(in)   :: fval                     
+        real, dimension(:,:), allocatable, intent(in)   :: xval                     
+        real, dimension(:,:), allocatable, intent(in)   :: xmin                     
+        real, dimension(:,:), allocatable, intent(in)   :: xmax                     
+        real, dimension(:,:), allocatable, intent(in)   :: xold1                    
+        real, dimension(:,:), allocatable, intent(in)   :: xold2                    
+        real, dimension(:,:), allocatable, intent(in)   :: df0dx                    
+        real, dimension(:,:), allocatable, intent(in)   :: dfdx                     
+        real, dimension(:,:), allocatable, intent(inout):: low                      
+        real, dimension(:,:), allocatable, intent(inout):: upp                      
+        real, dimension(:,:), allocatable, intent(in)   :: a                        
+        real, dimension(:,:), allocatable, intent(in)   :: c                        
+        real, dimension(:,:), allocatable, intent(in)   :: d                        
         ! Internal Arguments
-        integer                                         :: i,j                      ! scalar
-        real                                            :: epsimin                  ! scalar
-        real                                            :: raa0                     ! scalar
-        real                                            :: move                     ! scalar
-        real                                            :: albefa                   ! scalar
-        real                                            :: asyinit                  ! scalar
-        real                                            :: asyincr                  ! scalar
-        real                                            :: asydecr                  ! scalar
-        real, dimension(:,:), allocatable               :: b                        ! matrix
-        real, dimension(:,:), allocatable               :: eeen                     ! vector
-        real, dimension(:,:), allocatable               :: eeem                     ! vector
-        real, dimension(:,:), allocatable               :: zeron                    ! vector
-        real, dimension(:,:), allocatable               :: zzz                      ! vector
-        real, dimension(:,:), allocatable               :: zzz1                     ! vector
-        real, dimension(:,:), allocatable               :: zzz2                     ! vector
-        real, dimension(:,:), allocatable               :: factor                   ! vector
-        real, dimension(:,:), allocatable               :: lowmin                   ! vector
-        real, dimension(:,:), allocatable               :: lowmax                   ! vector
-        real, dimension(:,:), allocatable               :: uppmin                   ! vector
-        real, dimension(:,:), allocatable               :: uppmax                   ! vector
-        real, dimension(:,:), allocatable               :: alfa                     ! vector
-        real, dimension(:,:), allocatable               :: beta                     ! vector
-        real, dimension(:,:), allocatable               :: xmami                    ! vector
-        real, dimension(:,:), allocatable               :: xmamieps                 ! vector
-        real, dimension(:,:), allocatable               :: xmamiinv                 ! vector
-        real, dimension(:,:), allocatable               :: ux1                      ! vector
-        real, dimension(:,:), allocatable               :: ux2                      ! vector
-        real, dimension(:,:), allocatable               :: xl1                      ! vector
-        real, dimension(:,:), allocatable               :: xl2                      ! vector
-        real, dimension(:,:), allocatable               :: uxinv                    ! vector
-        real, dimension(:,:), allocatable               :: xlinv                    ! vector
-        real, dimension(:,:), allocatable               :: p0                       ! vector
-        real, dimension(:,:), allocatable               :: q0                       ! vector
-        real, dimension(:,:), allocatable               :: pq0                       ! vector
-        real, dimension(:,:), allocatable               :: P                        ! matrix
-        real, dimension(:,:), allocatable               :: Q                        ! matrix
-        real, dimension(:,:), allocatable               :: PQ                       ! matrix
+        integer                                         :: i,j                      
+        real                                            :: epsimin                  
+        real                                            :: raa0                     
+        real                                            :: move                     
+        real                                            :: albefa                   
+        real                                            :: asyinit                  
+        real                                            :: asyincr                  
+        real                                            :: asydecr                  
+        real, dimension(:,:), allocatable               :: b                        
+        real, dimension(:,:), allocatable               :: eeen                     
+        real, dimension(:,:), allocatable               :: eeem                     
+        real, dimension(:,:), allocatable               :: zeron                    
+        real, dimension(:,:), allocatable               :: zzz                      
+        real, dimension(:,:), allocatable               :: zzz1                     
+        real, dimension(:,:), allocatable               :: zzz2                     
+        real, dimension(:,:), allocatable               :: factor                   
+        real, dimension(:,:), allocatable               :: lowmin                   
+        real, dimension(:,:), allocatable               :: lowmax                   
+        real, dimension(:,:), allocatable               :: uppmin                   
+        real, dimension(:,:), allocatable               :: uppmax                   
+        real, dimension(:,:), allocatable               :: alfa                     
+        real, dimension(:,:), allocatable               :: beta                     
+        real, dimension(:,:), allocatable               :: xmami                    
+        real, dimension(:,:), allocatable               :: xmamieps                 
+        real, dimension(:,:), allocatable               :: xmamiinv                 
+        real, dimension(:,:), allocatable               :: ux1                      
+        real, dimension(:,:), allocatable               :: ux2                      
+        real, dimension(:,:), allocatable               :: xl1                      
+        real, dimension(:,:), allocatable               :: xl2                      
+        real, dimension(:,:), allocatable               :: uxinv                    
+        real, dimension(:,:), allocatable               :: xlinv                    
+        real, dimension(:,:), allocatable               :: p0                       
+        real, dimension(:,:), allocatable               :: q0                       
+        real, dimension(:,:), allocatable               :: pq0                      
+        real, dimension(:,:), allocatable               :: P                        
+        real, dimension(:,:), allocatable               :: Q                        
+        real, dimension(:,:), allocatable               :: PQ                       
         ! PROCEDURE
         epsimin = 1.0E-7 
         raa0 = 0.00001
@@ -366,117 +364,117 @@ contains
         !                z >= 0,   y_i >= 0,         i = 1,...,m                                !
         !*** INPUT:                                                                             !
         !                                                                                       !
-        !   m    = The number of general constraints.                                           ! scalar
-        !   n    = The number of variables x_j.                                                 ! scalar
-        !  iter  = Current iteration number ( =1 the first time mmasub is called).              ! scalar
-        !  xval  = Column vector with the current values of the variables x_j.                  ! vector
-        !  xmin  = Column vector with the lower bounds for the variables x_j.                   ! vector
-        !  xmax  = Column vector with the upper bounds for the variables x_j.                   ! vector
-        !  xold1 = xval, one iteration ago (provided that iter>1).                              ! vector 
-        !  xold2 = xval, two iterations ago (provided that iter>2).                             ! vector
-        !  f0val = The value of the objective function f_0 at xval.                             ! vector
-        !  df0dx = Column vector with the derivatives of the objective function                 ! vector
+        !   m    = The number of general constraints.                                           ! 
+        !   n    = The number of variables x_j.                                                 ! 
+        !  iter  = Current iteration number ( =1 the first time mmasub is called).              ! 
+        !  xval  = Column vector with the current values of the variables x_j.                  ! 
+        !  xmin  = Column vector with the lower bounds for the variables x_j.                   ! 
+        !  xmax  = Column vector with the upper bounds for the variables x_j.                   ! 
+        !  xold1 = xval, one iteration ago (provided that iter>1).                              ! 
+        !  xold2 = xval, two iterations ago (provided that iter>2).                             ! 
+        !  f0val = The value of the objective function f_0 at xval.                             ! 
+        !  df0dx = Column vector with the derivatives of the objective function                 ! 
         !          f_0 with respect to the variables x_j, calculated at xval.                   !
-        !  fval  = Column vector with the values of the constraint functions f_i,               ! vector
+        !  fval  = Column vector with the values of the constraint functions f_i,               ! 
         !          calculated at xval.                                                          !
-        !  dfdx  = (m x n)-matrix with the derivatives of the constraint functions              ! matrix
+        !  dfdx  = (m x n)-matrix with the derivatives of the constraint functions              ! 
         !          f_i with respect to the variables x_j, calculated at xval.                   ! 
         !          dfdx(i,j) = the derivative of f_i with respect to x_j.                       !
-        !  low   = Column vector with the lower asymptotes from the previous                    ! vector
+        !  low   = Column vector with the lower asymptotes from the previous                    ! 
         !          iteration (provided that iter>1).                                            !
-        !  upp   = Column vector with the upper asymptotes from the previous                    ! vector
+        !  upp   = Column vector with the upper asymptotes from the previous                    ! 
         !          iteration (provided that iter>1).                                            !
-        !  a0    = The constants a_0 in the term a_0*z.                                         ! vector
-        !  a     = Column vector with the constants a_i in the terms a_i*z.                     ! vector
-        !  c     = Column vector with the constants c_i in the terms c_i*y_i.                   ! vector
-        !  d     = Column vector with the constants d_i in the terms 0.5*d_i*(y_i)^2.           ! vector
+        !  a0    = The constants a_0 in the term a_0*z.                                         ! 
+        !  a     = Column vector with the constants a_i in the terms a_i*z.                     ! 
+        !  c     = Column vector with the constants c_i in the terms c_i*y_i.                   ! 
+        !  d     = Column vector with the constants d_i in the terms 0.5*d_i*(y_i)^2.           ! 
         !                                                                                       !
         !*** OUTPUT:                                                                            !
         !                                                                                       !
-        !  xmma  = Column vector with the optimal values of the variables x_j                   ! vector
+        !  xmma  = Column vector with the optimal values of the variables x_j                   ! 
         !          in the current MMA subproblem.                                               ! 
-        !  ymma  = Column vector with the optimal values of the variables y_i                   ! vector
+        !  ymma  = Column vector with the optimal values of the variables y_i                   ! 
         !          in the current MMA subproblem.                                               !
-        !  zmma  = Scalar with the optimal value of the variable z                              ! vector
+        !  zmma  = Scalar with the optimal value of the variable z                              ! 
         !          in the current MMA subproblem.                                               !
-        !  lam   = Lagrange multipliers for the m general MMA constraints.                      ! vector
-        !  xsi   = Lagrange multipliers for the n constraints alfa_j - x_j <= 0.                ! vector
-        !  eta   = Lagrange multipliers for the n constraints x_j - beta_j <= 0.                ! vector
-        !   mu   = Lagrange multipliers for the m constraints -y_i <= 0.                        ! vector
-        !  zet   = Lagrange multiplier for the single constraint -z <= 0.                       ! scalar
-        !   s    = Slack variables for the m general MMA constraints.                           ! vector
-        !  low   = Column vector with the lower asymptotes, calculated and used                 ! vector
+        !  lam   = Lagrange multipliers for the m general MMA constraints.                      ! 
+        !  xsi   = Lagrange multipliers for the n constraints alfa_j - x_j <= 0.                ! 
+        !  eta   = Lagrange multipliers for the n constraints x_j - beta_j <= 0.                ! 
+        !   mu   = Lagrange multipliers for the m constraints -y_i <= 0.                        ! 
+        !  zet   = Lagrange multiplier for the single constraint -z <= 0.                       ! 
+        !   s    = Slack variables for the m general MMA constraints.                           ! 
+        !  low   = Column vector with the lower asymptotes, calculated and used                 ! 
         !          in the current MMA subproblem.                                               !
-        !  upp   = Column vector with the upper asymptotes, calculated and used                 ! vector
+        !  upp   = Column vector with the upper asymptotes, calculated and used                 ! 
         !          in the current MMA subproblem.                                               !
         ! ------------------------------------------------------------------------------------- !
         ! Output Arguments
-        double precision, dimension(:,:), allocatable, intent(out)  :: xmma                     ! vector
-        double precision, dimension(:,:), allocatable, intent(out)  :: ymma                     ! vector
-        double precision, intent(out)                               :: zmma                     ! scalar
-        double precision, dimension(:,:), allocatable, intent(out)  :: lam                      ! vector
-        double precision, dimension(:,:), allocatable, intent(out)  :: xsi                      ! vector
-        double precision, dimension(:,:), allocatable, intent(out)  :: eta                      ! vector
-        double precision, dimension(:,:), allocatable, intent(out)  :: mu                       ! vector
-        double precision, intent(out)                               :: zet                      ! scalar
-        double precision, dimension(:,:), allocatable, intent(out)  :: s                        ! vector
+        double precision, dimension(:,:), allocatable, intent(out)  :: xmma                    
+        double precision, dimension(:,:), allocatable, intent(out)  :: ymma                     
+        double precision, intent(out)                               :: zmma                     
+        double precision, dimension(:,:), allocatable, intent(out)  :: lam                      
+        double precision, dimension(:,:), allocatable, intent(out)  :: xsi                      
+        double precision, dimension(:,:), allocatable, intent(out)  :: eta                       
+        double precision, dimension(:,:), allocatable, intent(out)  :: mu                       
+        double precision, intent(out)                               :: zet                      
+        double precision, dimension(:,:), allocatable, intent(out)  :: s                        
         ! Input Arguments
-        integer, intent(in)                                         :: m                        ! scalar
-        integer, intent(in)                                         :: n                        ! scalar
-        integer, intent(in)                                         :: iter                     ! scalar
-        double precision, intent(in)                                :: a0                       ! scalar
-        double precision, intent(in)                                :: f0val                    ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: fval                     ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: xval                     ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: xmin                     ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: xmax                     ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: xold1                    ! vector 
-        double precision, dimension(:,:), allocatable, intent(in)   :: xold2                    ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: df0dx                    ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: dfdx                     ! matrix
-        double precision, dimension(:,:), allocatable, intent(inout):: low                      ! vector
-        double precision, dimension(:,:), allocatable, intent(inout):: upp                      ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: a                        ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: c                        ! vector
-        double precision, dimension(:,:), allocatable, intent(in)   :: d                        ! vector
+        integer, intent(in)                                         :: m                        
+        integer, intent(in)                                         :: n                        
+        integer, intent(in)                                         :: iter                     
+        double precision, intent(in)                                :: a0                       
+        double precision, intent(in)                                :: f0val                    
+        double precision, dimension(:,:), allocatable, intent(in)   :: fval                     
+        double precision, dimension(:,:), allocatable, intent(in)   :: xval                     
+        double precision, dimension(:,:), allocatable, intent(in)   :: xmin                     
+        double precision, dimension(:,:), allocatable, intent(in)   :: xmax                     
+        double precision, dimension(:,:), allocatable, intent(in)   :: xold1                    
+        double precision, dimension(:,:), allocatable, intent(in)   :: xold2                    
+        double precision, dimension(:,:), allocatable, intent(in)   :: df0dx                    
+        double precision, dimension(:,:), allocatable, intent(in)   :: dfdx                     
+        double precision, dimension(:,:), allocatable, intent(inout):: low                      
+        double precision, dimension(:,:), allocatable, intent(inout):: upp                      
+        double precision, dimension(:,:), allocatable, intent(in)   :: a                        
+        double precision, dimension(:,:), allocatable, intent(in)   :: c                        
+        double precision, dimension(:,:), allocatable, intent(in)   :: d                        
         ! Internal Arguments
-        integer                                                     :: i,j                      ! scalar
-        double precision                                            :: epsimin                  ! scalar
-        double precision                                            :: raa0                     ! scalar
-        double precision                                            :: move                     ! scalar
-        double precision                                            :: albefa                   ! scalar
-        double precision                                            :: asyinit                  ! scalar
-        double precision                                            :: asyincr                  ! scalar
-        double precision                                            :: asydecr                  ! scalar
-        double precision, dimension(:,:), allocatable               :: b                        ! matrix
-        double precision, dimension(:,:), allocatable               :: eeen                     ! vector
-        double precision, dimension(:,:), allocatable               :: eeem                     ! vector
-        double precision, dimension(:,:), allocatable               :: zeron                    ! vector
-        double precision, dimension(:,:), allocatable               :: zzz                      ! vector
-        double precision, dimension(:,:), allocatable               :: zzz1                     !
-        double precision, dimension(:,:), allocatable               :: zzz2                     !
-        double precision, dimension(:,:), allocatable               :: factor                   ! vector
-        double precision, dimension(:,:), allocatable               :: lowmin                   ! vector
-        double precision, dimension(:,:), allocatable               :: lowmax                   ! vector
-        double precision, dimension(:,:), allocatable               :: uppmin                   ! vector
-        double precision, dimension(:,:), allocatable               :: uppmax                   ! vector
-        double precision, dimension(:,:), allocatable               :: alfa                     ! vector
-        double precision, dimension(:,:), allocatable               :: beta                     ! vector
-        double precision, dimension(:,:), allocatable               :: xmami                    ! vector
-        double precision, dimension(:,:), allocatable               :: xmamieps                 ! vector
-        double precision, dimension(:,:), allocatable               :: xmamiinv                 ! vector
-        double precision, dimension(:,:), allocatable               :: ux1                      ! vector
-        double precision, dimension(:,:), allocatable               :: ux2                      ! vector
-        double precision, dimension(:,:), allocatable               :: xl1                      ! vector
-        double precision, dimension(:,:), allocatable               :: xl2                      ! vector
-        double precision, dimension(:,:), allocatable               :: uxinv                    ! vector
-        double precision, dimension(:,:), allocatable               :: xlinv                    ! vector
-        double precision, dimension(:,:), allocatable               :: p0                       ! vector
-        double precision, dimension(:,:), allocatable               :: q0                       ! vector
-        double precision, dimension(:,:), allocatable               :: pq0                       ! vector
-        double precision, dimension(:,:), allocatable               :: P                        ! matrix
-        double precision, dimension(:,:), allocatable               :: Q                        ! matrix
-        double precision, dimension(:,:), allocatable               :: PQ                       ! matrix
+        integer                                                     :: i,j                      
+        double precision                                            :: epsimin                  
+        double precision                                            :: raa0                     
+        double precision                                            :: move                     
+        double precision                                            :: albefa                   
+        double precision                                            :: asyinit                  
+        double precision                                            :: asyincr                  
+        double precision                                            :: asydecr                  
+        double precision, dimension(:,:), allocatable               :: b                        
+        double precision, dimension(:,:), allocatable               :: eeen                     
+        double precision, dimension(:,:), allocatable               :: eeem                     
+        double precision, dimension(:,:), allocatable               :: zeron                    
+        double precision, dimension(:,:), allocatable               :: zzz                      
+        double precision, dimension(:,:), allocatable               :: zzz1                     
+        double precision, dimension(:,:), allocatable               :: zzz2                     
+        double precision, dimension(:,:), allocatable               :: factor                   
+        double precision, dimension(:,:), allocatable               :: lowmin                   
+        double precision, dimension(:,:), allocatable               :: lowmax                   
+        double precision, dimension(:,:), allocatable               :: uppmin                   
+        double precision, dimension(:,:), allocatable               :: uppmax                   
+        double precision, dimension(:,:), allocatable               :: alfa                     
+        double precision, dimension(:,:), allocatable               :: beta                     
+        double precision, dimension(:,:), allocatable               :: xmami                    
+        double precision, dimension(:,:), allocatable               :: xmamieps                 
+        double precision, dimension(:,:), allocatable               :: xmamiinv                 
+        double precision, dimension(:,:), allocatable               :: ux1                      
+        double precision, dimension(:,:), allocatable               :: ux2                      
+        double precision, dimension(:,:), allocatable               :: xl1                      
+        double precision, dimension(:,:), allocatable               :: xl2                      
+        double precision, dimension(:,:), allocatable               :: uxinv                    
+        double precision, dimension(:,:), allocatable               :: xlinv                    
+        double precision, dimension(:,:), allocatable               :: p0                       
+        double precision, dimension(:,:), allocatable               :: q0                       
+        double precision, dimension(:,:), allocatable               :: pq0                       
+        double precision, dimension(:,:), allocatable               :: P                        
+        double precision, dimension(:,:), allocatable               :: Q                        
+        double precision, dimension(:,:), allocatable               :: PQ                       
         ! PROCEDURE
         epsimin = 1.0E-7
         raa0 = 0.00001d0
@@ -576,133 +574,133 @@ contains
         ! Output: xmma,ymma,zmma, slack variables and Lagrange multiplers.                      !
         ! ------------------------------------------------------------------------------------- !
         ! Output Arugments
-        real, dimension(:,:), allocatable, intent(out)                :: xmma                   ! 
-        real, dimension(:,:), allocatable, intent(out)                :: ymma                   ! 
-        real, intent(out)                                             :: zmma                   ! 
-        real, dimension(:,:), allocatable, intent(out)                :: lamma                  ! 
-        real, dimension(:,:), allocatable, intent(out)                :: xsimma                 !
-        real, dimension(:,:), allocatable, intent(out)                :: etamma                 !
-        real, dimension(:,:), allocatable, intent(out)                :: mumma                  !
-        real, intent(out)                                             :: zetmma                 !
-        real, dimension(:,:), allocatable, intent(out)                :: smma                   !
+        real, dimension(:,:), allocatable, intent(out)                :: xmma                   
+        real, dimension(:,:), allocatable, intent(out)                :: ymma                   
+        real, intent(out)                                             :: zmma                   
+        real, dimension(:,:), allocatable, intent(out)                :: lamma                  
+        real, dimension(:,:), allocatable, intent(out)                :: xsimma                 
+        real, dimension(:,:), allocatable, intent(out)                :: etamma                 
+        real, dimension(:,:), allocatable, intent(out)                :: mumma                  
+        real, intent(out)                                             :: zetmma                 
+        real, dimension(:,:), allocatable, intent(out)                :: smma                   
         ! Input Arguments
-        integer, intent(in)                                           :: m                      ! 
-        integer, intent(in)                                           :: n                      ! 
-        real, intent(in)                                              :: epsimin                ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: low                    ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: upp                    ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: alfa                   ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: beta                   ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: p0                     !  
-        real, dimension(:,:), allocatable, intent(in)                 :: q0                     ! 
-        real, dimension(:,:), allocatable                             :: pq0                    !
-        real, dimension(:,:), allocatable, intent(in)                 :: P                      ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: Q                      ! 
-        real, intent(in)                                              :: a0                     ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: a                      ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: b                      ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: c                      ! 
-        real, dimension(:,:), allocatable, intent(in)                 :: d                      ! 
+        integer, intent(in)                                           :: m                      
+        integer, intent(in)                                           :: n                      
+        real, intent(in)                                              :: epsimin                
+        real, dimension(:,:), allocatable, intent(in)                 :: low                    
+        real, dimension(:,:), allocatable, intent(in)                 :: upp                    
+        real, dimension(:,:), allocatable, intent(in)                 :: alfa                   
+        real, dimension(:,:), allocatable, intent(in)                 :: beta                   
+        real, dimension(:,:), allocatable, intent(in)                 :: p0                     
+        real, dimension(:,:), allocatable, intent(in)                 :: q0                      
+        real, dimension(:,:), allocatable                             :: pq0                    
+        real, dimension(:,:), allocatable, intent(in)                 :: P                       
+        real, dimension(:,:), allocatable, intent(in)                 :: Q                       
+        real, intent(in)                                              :: a0                     
+        real, dimension(:,:), allocatable, intent(in)                 :: a                      
+        real, dimension(:,:), allocatable, intent(in)                 :: b                       
+        real, dimension(:,:), allocatable, intent(in)                 :: c                      
+        real, dimension(:,:), allocatable, intent(in)                 :: d                       
         ! Internal Arguments
-        integer                                                       :: itera                  ! 
-        integer                                                       :: ittt                   !
-        integer                                                       :: itto                   !
-        real                                                          :: epsi                   ! 
-        real                                                          :: residunorm             !
-        real                                                          :: residumax              !
-        real, dimension(:), allocatable                               :: residu1                !
-        real, dimension(:), allocatable                               :: residu2                !
-        real, dimension(:), allocatable                               :: residu                 !
-        real, dimension(:,:), allocatable                             :: een                    !  
-        real, dimension(:,:), allocatable                             :: eem                    ! 
-        real, dimension(:,:), allocatable                             :: epsvecm                ! 
-        real, dimension(:,:), allocatable                             :: epsvecn                ! 
-        real, dimension(:,:), allocatable                             :: x                      ! 
-        real, dimension(:,:), allocatable                             :: y                      ! 
-        real                                                          :: z                      ! 
-        real, dimension(:,:), allocatable                             :: dx                     !
-        real, dimension(:,:), allocatable                             :: dy                     !
-        real                                                          :: dz                     !
-        real, dimension(:,:), allocatable                             :: xold                   !
-        real, dimension(:,:), allocatable                             :: yold                   !
-        real                                                          :: zold                   !
-        real, dimension(:,:), allocatable                             :: delx                   !
-        real, dimension(:,:), allocatable                             :: dely                   !
-        real                                                          :: delz                   !
-        real, dimension(:,:), allocatable                             :: lam                    ! 
-        real, dimension(:,:), allocatable                             :: mu                     !  
-        real, dimension(:,:), allocatable                             :: xsi                    ! 
-        real, dimension(:,:), allocatable                             :: eta                    ! 
-        real, dimension(:,:), allocatable                             :: s                      !  
-        real, dimension(:,:), allocatable                             :: ux1                    !
-        real, dimension(:,:), allocatable                             :: ux2                    !
-        real, dimension(:,:), allocatable                             :: ux3                    !
-        real, dimension(:,:), allocatable                             :: xl1                    !
-        real, dimension(:,:), allocatable                             :: xl2                    !
-        real, dimension(:,:), allocatable                             :: xl3                    !
-        real, dimension(:,:), allocatable                             :: uxinv1                 !
-        real, dimension(:,:), allocatable                             :: xlinv1                 !
-        real, dimension(:,:), allocatable                             :: uxinv2                 !
-        real, dimension(:,:), allocatable                             :: xlinv2                 !
-        real, dimension(:,:), allocatable                             :: dellam                 !
-        real, dimension(:,:), allocatable                             :: diagx                  !
-        real, dimension(:,:), allocatable                             :: diagy                  !
-        real, dimension(:,:), allocatable                             :: diagxinv               !
-        real, dimension(:,:), allocatable                             :: diagyinv               !
-        real, dimension(:,:), allocatable                             :: diaglam                !
-        real, dimension(:,:), allocatable                             :: diaglamyi              !
-        real, dimension(:,:), allocatable                             :: plam                   !
-        real, dimension(:,:), allocatable                             :: qlam                   !
-        real, dimension(:,:), allocatable                             :: gvec                   !
-        real, dimension(:,:), allocatable                             :: dpsidx                 !
-        real, dimension(:,:), allocatable                             :: res                    !
-        real, dimension(:,:), allocatable                             :: rex                    !
-        real, dimension(:,:), allocatable                             :: rey                    !
-        real                                                          :: rez                    !
-        real, dimension(:,:), allocatable                             :: relam                  !
-        real, dimension(:,:), allocatable                             :: rexsi                  !
-        real, dimension(:,:), allocatable                             :: reeta                  !
-        real, dimension(:,:), allocatable                             :: remu                   !
-        real                                                          :: rezet                  !
-        real                                                          :: resinew                !
-        real, dimension(:,:), allocatable                             :: blam                   !
-        real, dimension(:,:), allocatable                             :: GG                     !
-        real, dimension(:,:), allocatable                             :: bb                     !
-        real, dimension(:,:), allocatable                             :: bx                     !
-        real, dimension(:,:), allocatable                             :: bz                     !
-        real, dimension(:,:), allocatable                             :: AA                     !
-        real, dimension(:,:), allocatable                             :: Axx                    !
-        real, dimension(:,:), allocatable                             :: axz                    !
-        real                                                          :: azz                    !
-        real, dimension(:,:), allocatable                             :: Alam                   !
-        real, dimension(:,:), allocatable                             :: solut                  !
-        real, dimension(:,:), allocatable                             :: dlam                   !
-        real, dimension(:,:), allocatable                             :: diaglamyiinv           !
-        real, dimension(:,:), allocatable                             :: dellamyi               !
-        real, dimension(:,:), allocatable                             :: dxsi                   !
-        real, dimension(:,:), allocatable                             :: deta                   !
-        real, dimension(:,:), allocatable                             :: dmu                    !
-        real                                                          :: zet                    ! 
-        real                                                          :: dzet                   !
-        real, dimension(:,:), allocatable                             :: ds                     !
-        real, dimension(:), allocatable                               :: xx                     !
-        real, dimension(:), allocatable                               :: dxx                    !
-        real, dimension(:), allocatable                               :: stepxx                 !
-        real                                                          :: stmxx                  !
-        real, dimension(:,:), allocatable                             :: stepalfa               !
-        real                                                          :: stmalfa                !
-        real, dimension(:,:), allocatable                             :: stepbeta               !
-        real                                                          :: stmbeta                !
-        real                                                          :: stmalbe                !
-        real                                                          :: stmalbexx              !
-        real                                                          :: stminv                 !
-        real                                                          :: steg                   !
-        real, dimension(:,:), allocatable                             :: lamold                 !
-        real, dimension(:,:), allocatable                             :: xsiold                 !
-        real, dimension(:,:), allocatable                             :: etaold                 !
-        real, dimension(:,:), allocatable                             :: muold                  !
-        real                                                          :: zetold                 !
-        real, dimension(:,:), allocatable                             :: sold                   !
+        integer                                                       :: itera                  
+        integer                                                       :: ittt                   
+        integer                                                       :: itto                   
+        real                                                          :: epsi                    
+        real                                                          :: residunorm             
+        real                                                          :: residumax              
+        real, dimension(:), allocatable                               :: residu1                
+        real, dimension(:), allocatable                               :: residu2                
+        real, dimension(:), allocatable                               :: residu                 
+        real, dimension(:,:), allocatable                             :: een                      
+        real, dimension(:,:), allocatable                             :: eem                     
+        real, dimension(:,:), allocatable                             :: epsvecm                 
+        real, dimension(:,:), allocatable                             :: epsvecn                 
+        real, dimension(:,:), allocatable                             :: x                       
+        real, dimension(:,:), allocatable                             :: y                       
+        real                                                          :: z                       
+        real, dimension(:,:), allocatable                             :: dx                     
+        real, dimension(:,:), allocatable                             :: dy                     
+        real                                                          :: dz                     
+        real, dimension(:,:), allocatable                             :: xold                   
+        real, dimension(:,:), allocatable                             :: yold                   
+        real                                                          :: zold                   
+        real, dimension(:,:), allocatable                             :: delx                   
+        real, dimension(:,:), allocatable                             :: dely                   
+        real                                                          :: delz                   
+        real, dimension(:,:), allocatable                             :: lam                     
+        real, dimension(:,:), allocatable                             :: mu                       
+        real, dimension(:,:), allocatable                             :: xsi                     
+        real, dimension(:,:), allocatable                             :: eta                     
+        real, dimension(:,:), allocatable                             :: s                        
+        real, dimension(:,:), allocatable                             :: ux1                    
+        real, dimension(:,:), allocatable                             :: ux2                    
+        real, dimension(:,:), allocatable                             :: ux3                    
+        real, dimension(:,:), allocatable                             :: xl1                    
+        real, dimension(:,:), allocatable                             :: xl2                    
+        real, dimension(:,:), allocatable                             :: xl3                    
+        real, dimension(:,:), allocatable                             :: uxinv1                 
+        real, dimension(:,:), allocatable                             :: xlinv1                 
+        real, dimension(:,:), allocatable                             :: uxinv2                 
+        real, dimension(:,:), allocatable                             :: xlinv2                 
+        real, dimension(:,:), allocatable                             :: dellam                 
+        real, dimension(:,:), allocatable                             :: diagx                  
+        real, dimension(:,:), allocatable                             :: diagy                  
+        real, dimension(:,:), allocatable                             :: diagxinv               
+        real, dimension(:,:), allocatable                             :: diagyinv               
+        real, dimension(:,:), allocatable                             :: diaglam                
+        real, dimension(:,:), allocatable                             :: diaglamyi              
+        real, dimension(:,:), allocatable                             :: plam                   
+        real, dimension(:,:), allocatable                             :: qlam                   
+        real, dimension(:,:), allocatable                             :: gvec                   
+        real, dimension(:,:), allocatable                             :: dpsidx                 
+        real, dimension(:,:), allocatable                             :: res                    
+        real, dimension(:,:), allocatable                             :: rex                    
+        real, dimension(:,:), allocatable                             :: rey                    
+        real                                                          :: rez                    
+        real, dimension(:,:), allocatable                             :: relam                  
+        real, dimension(:,:), allocatable                             :: rexsi                  
+        real, dimension(:,:), allocatable                             :: reeta                  
+        real, dimension(:,:), allocatable                             :: remu                   
+        real                                                          :: rezet                  
+        real                                                          :: resinew                
+        real, dimension(:,:), allocatable                             :: blam                   
+        real, dimension(:,:), allocatable                             :: GG                     
+        real, dimension(:,:), allocatable                             :: bb                     
+        real, dimension(:,:), allocatable                             :: bx                     
+        real, dimension(:,:), allocatable                             :: bz                     
+        real, dimension(:,:), allocatable                             :: AA                     
+        real, dimension(:,:), allocatable                             :: Axx                    
+        real, dimension(:,:), allocatable                             :: axz                    
+        real                                                          :: azz                    
+        real, dimension(:,:), allocatable                             :: Alam                   
+        real, dimension(:,:), allocatable                             :: solut                  
+        real, dimension(:,:), allocatable                             :: dlam                   
+        real, dimension(:,:), allocatable                             :: diaglamyiinv           
+        real, dimension(:,:), allocatable                             :: dellamyi               
+        real, dimension(:,:), allocatable                             :: dxsi                   
+        real, dimension(:,:), allocatable                             :: deta                  
+        real, dimension(:,:), allocatable                             :: dmu                   
+        real                                                          :: zet                    
+        real                                                          :: dzet                   
+        real, dimension(:,:), allocatable                             :: ds                     
+        real, dimension(:), allocatable                               :: xx                     
+        real, dimension(:), allocatable                               :: dxx                   
+        real, dimension(:), allocatable                               :: stepxx                 
+        real                                                          :: stmxx                  
+        real, dimension(:,:), allocatable                             :: stepalfa               
+        real                                                          :: stmalfa                
+        real, dimension(:,:), allocatable                             :: stepbeta               
+        real                                                          :: stmbeta                
+        real                                                          :: stmalbe                
+        real                                                          :: stmalbexx              
+        real                                                          :: stminv                 
+        real                                                          :: steg                   
+        real, dimension(:,:), allocatable                             :: lamold                
+        real, dimension(:,:), allocatable                             :: xsiold                 
+        real, dimension(:,:), allocatable                             :: etaold                 
+        real, dimension(:,:), allocatable                             :: muold                  
+        real                                                          :: zetold                 
+        real, dimension(:,:), allocatable                             :: sold                   
         ! PROCEDURE
         een = ones(n,1)
         eem = ones(m,1)
@@ -931,134 +929,134 @@ contains
         ! Output: xmma,ymma,zmma, slack variables and Lagrange multiplers.                      !
         ! ------------------------------------------------------------------------------------- !
         ! Output Arugments
-        double precision, dimension(:,:), allocatable, intent(out)    :: xmma                   ! 
-        double precision, dimension(:,:), allocatable, intent(out)    :: ymma                   ! 
-        double precision, intent(out)                                 :: zmma                   ! 
-        double precision, dimension(:,:), allocatable, intent(out)    :: lamma                  ! 
-        double precision, dimension(:,:), allocatable, intent(out)    :: xsimma                 !
-        double precision, dimension(:,:), allocatable, intent(out)    :: etamma                 !
-        double precision, dimension(:,:), allocatable, intent(out)    :: mumma                  !
-        double precision, intent(out)                                 :: zetmma                 !
-        double precision, dimension(:,:), allocatable, intent(out)    :: smma                   !
+        double precision, dimension(:,:), allocatable, intent(out)    :: xmma                   
+        double precision, dimension(:,:), allocatable, intent(out)    :: ymma                    
+        double precision, intent(out)                                 :: zmma                   
+        double precision, dimension(:,:), allocatable, intent(out)    :: lamma                   
+        double precision, dimension(:,:), allocatable, intent(out)    :: xsimma                 
+        double precision, dimension(:,:), allocatable, intent(out)    :: etamma                 
+        double precision, dimension(:,:), allocatable, intent(out)    :: mumma                  
+        double precision, intent(out)                                 :: zetmma                 
+        double precision, dimension(:,:), allocatable, intent(out)    :: smma                   
         ! Input Arguments
-        integer, intent(in)                                           :: m                      ! 
-        integer, intent(in)                                           :: n                      ! 
-        double precision, intent(in)                                  :: epsimin                ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: low                    ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: upp                    ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: alfa                   ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: beta                   ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: p0                     !  
-        double precision, dimension(:,:), allocatable, intent(in)     :: q0                     ! 
-        double precision, dimension(:,:), allocatable                 :: pq0                    !
-        double precision, dimension(:,:), allocatable, intent(in)     :: P                      ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: Q                      ! 
-        double precision, intent(in)                                  :: a0                     ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: a                      ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: b                      ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: c                      ! 
-        double precision, dimension(:,:), allocatable, intent(in)     :: d                      ! 
+        integer, intent(in)                                           :: m                      
+        integer, intent(in)                                           :: n                       
+        double precision, intent(in)                                  :: epsimin                 
+        double precision, dimension(:,:), allocatable, intent(in)     :: low                     
+        double precision, dimension(:,:), allocatable, intent(in)     :: upp                     
+        double precision, dimension(:,:), allocatable, intent(in)     :: alfa                    
+        double precision, dimension(:,:), allocatable, intent(in)     :: beta                    
+        double precision, dimension(:,:), allocatable, intent(in)     :: p0                       
+        double precision, dimension(:,:), allocatable, intent(in)     :: q0                      
+        double precision, dimension(:,:), allocatable                 :: pq0                    
+        double precision, dimension(:,:), allocatable, intent(in)     :: P                       
+        double precision, dimension(:,:), allocatable, intent(in)     :: Q                       
+        double precision, intent(in)                                  :: a0                      
+        double precision, dimension(:,:), allocatable, intent(in)     :: a                       
+        double precision, dimension(:,:), allocatable, intent(in)     :: b                       
+        double precision, dimension(:,:), allocatable, intent(in)     :: c                       
+        double precision, dimension(:,:), allocatable, intent(in)     :: d                       
         ! Internal Arguments
-        integer                                                       :: itera                  ! 
-        integer                                                       :: ittt                   !
-        integer                                                       :: itto                   !
-        double precision                                              :: epsi                   ! 
-        double precision                                              :: residunorm             !
-        double precision                                              :: residumax              !
-        double precision, dimension(:), allocatable                   :: residu1                !
-        double precision, dimension(:), allocatable                   :: residu2                !
-        double precision, dimension(:), allocatable                   :: residu                 !
-        double precision, dimension(:,:), allocatable                 :: een                    !  
-        double precision, dimension(:,:), allocatable                 :: eem                    ! 
-        double precision, dimension(:,:), allocatable                 :: epsvecm                ! 
-        double precision, dimension(:,:), allocatable                 :: epsvecn                ! 
-        double precision, dimension(:,:), allocatable                 :: x                      ! 
-        double precision, dimension(:,:), allocatable                 :: y                      ! 
-        double precision                                              :: z                      ! 
-        double precision, dimension(:,:), allocatable                 :: dx                     !
-        double precision, dimension(:,:), allocatable                 :: dy                     !
-        double precision                                              :: dz                     !
-        double precision, dimension(:,:), allocatable                 :: xold                   !
-        double precision, dimension(:,:), allocatable                 :: yold                   !
-        double precision                                              :: zold                   !
-        double precision, dimension(:,:), allocatable                 :: delx                   !
-        double precision, dimension(:,:), allocatable                 :: dely                   !
-        double precision                                              :: delz                   !
-        double precision, dimension(:,:), allocatable                 :: lam                    ! 
-        double precision, dimension(:,:), allocatable                 :: mu                     !  
-        double precision, dimension(:,:), allocatable                 :: xsi                    ! 
-        double precision, dimension(:,:), allocatable                 :: eta                    ! 
-        double precision, dimension(:,:), allocatable                 :: s                      !  
-        double precision, dimension(:,:), allocatable                 :: ux1                    !
-        double precision, dimension(:,:), allocatable                 :: ux2                    !
-        double precision, dimension(:,:), allocatable                 :: ux3                    !
-        double precision, dimension(:,:), allocatable                 :: xl1                    !
-        double precision, dimension(:,:), allocatable                 :: xl2                    !
-        double precision, dimension(:,:), allocatable                 :: xl3                    !
-        double precision, dimension(:,:), allocatable                 :: uxinv1                 !
-        double precision, dimension(:,:), allocatable                 :: xlinv1                 !
-        double precision, dimension(:,:), allocatable                 :: uxinv2                 !
-        double precision, dimension(:,:), allocatable                 :: xlinv2                 !
-        double precision, dimension(:,:), allocatable                 :: dellam                 !
-        double precision, dimension(:,:), allocatable                 :: diagx                  !
-        double precision, dimension(:,:), allocatable                 :: diagy                  !
-        double precision, dimension(:,:), allocatable                 :: diagxinv               !
-        double precision, dimension(:,:), allocatable                 :: diagyinv               !
-        double precision, dimension(:,:), allocatable                 :: diaglam                !
-        double precision, dimension(:,:), allocatable                 :: diaglamyi              !
-        double precision, dimension(:,:), allocatable                 :: plam                   !
-        double precision, dimension(:,:), allocatable                 :: qlam                   !
-        double precision, dimension(:,:), allocatable                 :: gvec                   !
-        double precision, dimension(:,:), allocatable                 :: dpsidx                 !
-        double precision, dimension(:,:), allocatable                 :: res                    !
-        double precision, dimension(:,:), allocatable                 :: rex                    !
-        double precision, dimension(:,:), allocatable                 :: rey                    !
-        double precision                                              :: rez                    !
-        double precision, dimension(:,:), allocatable                 :: relam                  !
-        double precision, dimension(:,:), allocatable                 :: rexsi                  !
-        double precision, dimension(:,:), allocatable                 :: reeta                  !
-        double precision, dimension(:,:), allocatable                 :: remu                   !
-        double precision                                              :: rezet                  !
-        double precision                                              :: resinew                !
-        double precision, dimension(:,:), allocatable                 :: blam                   !
-        double precision, dimension(:,:), allocatable                 :: GG                     !
-        double precision, dimension(:,:), allocatable                 :: bb                     !
-        double precision, dimension(:,:), allocatable                 :: bx                     !
-        double precision, dimension(:,:), allocatable                 :: bz                     !
-        double precision, dimension(:,:), allocatable                 :: AA                     !
-        double precision, dimension(:,:), allocatable                 :: ta                     !
-        double precision, dimension(:,:), allocatable                 :: Axx                    !
-        double precision, dimension(:,:), allocatable                 :: axz                    !
-        double precision                                              :: azz                    !
-        double precision, dimension(:,:), allocatable                 :: Alam                   !
-        double precision, dimension(:,:), allocatable                 :: solut                  !
-        double precision, dimension(:,:), allocatable                 :: dlam                   !
-        double precision, dimension(:,:), allocatable                 :: diaglamyiinv           !
-        double precision, dimension(:,:), allocatable                 :: dellamyi               !
-        double precision, dimension(:,:), allocatable                 :: dxsi                   !
-        double precision, dimension(:,:), allocatable                 :: deta                   !
-        double precision, dimension(:,:), allocatable                 :: dmu                    !
-        double precision                                              :: zet                    ! 
-        double precision                                              :: dzet                   !
-        double precision, dimension(:,:), allocatable                 :: ds                     !
-        double precision, dimension(:), allocatable                   :: xx                     !
-        double precision, dimension(:), allocatable                   :: dxx                    !
-        double precision, dimension(:), allocatable                   :: stepxx                 !
-        double precision                                              :: stmxx                  !
-        double precision, dimension(:,:), allocatable                 :: stepalfa               !
-        double precision                                              :: stmalfa                !
-        double precision, dimension(:,:), allocatable                 :: stepbeta               !
-        double precision                                              :: stmbeta                !
-        double precision                                              :: stmalbe                !
-        double precision                                              :: stmalbexx              !
-        double precision                                              :: stminv                 !
-        double precision                                              :: steg                   !
-        double precision, dimension(:,:), allocatable                 :: lamold                 !
-        double precision, dimension(:,:), allocatable                 :: xsiold                 !
-        double precision, dimension(:,:), allocatable                 :: etaold                 !
-        double precision, dimension(:,:), allocatable                 :: muold                  !
-        double precision                                              :: zetold                 !
-        double precision, dimension(:,:), allocatable                 :: sold                   !
+        integer                                                       :: itera                   
+        integer                                                       :: ittt                   
+        integer                                                       :: itto                   
+        double precision                                              :: epsi                    
+        double precision                                              :: residunorm             
+        double precision                                              :: residumax              
+        double precision, dimension(:), allocatable                   :: residu1                
+        double precision, dimension(:), allocatable                   :: residu2                
+        double precision, dimension(:), allocatable                   :: residu                 
+        double precision, dimension(:,:), allocatable                 :: een                      
+        double precision, dimension(:,:), allocatable                 :: eem                     
+        double precision, dimension(:,:), allocatable                 :: epsvecm                 
+        double precision, dimension(:,:), allocatable                 :: epsvecn                 
+        double precision, dimension(:,:), allocatable                 :: x                       
+        double precision, dimension(:,:), allocatable                 :: y                       
+        double precision                                              :: z                       
+        double precision, dimension(:,:), allocatable                 :: dx                     
+        double precision, dimension(:,:), allocatable                 :: dy                     
+        double precision                                              :: dz                     
+        double precision, dimension(:,:), allocatable                 :: xold                   
+        double precision, dimension(:,:), allocatable                 :: yold                   
+        double precision                                              :: zold                   
+        double precision, dimension(:,:), allocatable                 :: delx                   
+        double precision, dimension(:,:), allocatable                 :: dely                   
+        double precision                                              :: delz                   
+        double precision, dimension(:,:), allocatable                 :: lam                     
+        double precision, dimension(:,:), allocatable                 :: mu                       
+        double precision, dimension(:,:), allocatable                 :: xsi                     
+        double precision, dimension(:,:), allocatable                 :: eta                     
+        double precision, dimension(:,:), allocatable                 :: s                        
+        double precision, dimension(:,:), allocatable                 :: ux1                    
+        double precision, dimension(:,:), allocatable                 :: ux2                    
+        double precision, dimension(:,:), allocatable                 :: ux3                    
+        double precision, dimension(:,:), allocatable                 :: xl1                    
+        double precision, dimension(:,:), allocatable                 :: xl2                    
+        double precision, dimension(:,:), allocatable                 :: xl3                    
+        double precision, dimension(:,:), allocatable                 :: uxinv1                 
+        double precision, dimension(:,:), allocatable                 :: xlinv1                 
+        double precision, dimension(:,:), allocatable                 :: uxinv2                 
+        double precision, dimension(:,:), allocatable                 :: xlinv2                 
+        double precision, dimension(:,:), allocatable                 :: dellam                 
+        double precision, dimension(:,:), allocatable                 :: diagx                  
+        double precision, dimension(:,:), allocatable                 :: diagy                  
+        double precision, dimension(:,:), allocatable                 :: diagxinv               
+        double precision, dimension(:,:), allocatable                 :: diagyinv               
+        double precision, dimension(:,:), allocatable                 :: diaglam                
+        double precision, dimension(:,:), allocatable                 :: diaglamyi              
+        double precision, dimension(:,:), allocatable                 :: plam                   
+        double precision, dimension(:,:), allocatable                 :: qlam                   
+        double precision, dimension(:,:), allocatable                 :: gvec                   
+        double precision, dimension(:,:), allocatable                 :: dpsidx                 
+        double precision, dimension(:,:), allocatable                 :: res                    
+        double precision, dimension(:,:), allocatable                 :: rex                    
+        double precision, dimension(:,:), allocatable                 :: rey                    
+        double precision                                              :: rez                    
+        double precision, dimension(:,:), allocatable                 :: relam                  
+        double precision, dimension(:,:), allocatable                 :: rexsi                  
+        double precision, dimension(:,:), allocatable                 :: reeta                  
+        double precision, dimension(:,:), allocatable                 :: remu                   
+        double precision                                              :: rezet                  
+        double precision                                              :: resinew                
+        double precision, dimension(:,:), allocatable                 :: blam                   
+        double precision, dimension(:,:), allocatable                 :: GG                     
+        double precision, dimension(:,:), allocatable                 :: bb                     
+        double precision, dimension(:,:), allocatable                 :: bx                     
+        double precision, dimension(:,:), allocatable                 :: bz                     
+        double precision, dimension(:,:), allocatable                 :: AA                     
+        double precision, dimension(:,:), allocatable                 :: ta                     
+        double precision, dimension(:,:), allocatable                 :: Axx                    
+        double precision, dimension(:,:), allocatable                 :: axz                    
+        double precision                                              :: azz                    
+        double precision, dimension(:,:), allocatable                 :: Alam                  
+        double precision, dimension(:,:), allocatable                 :: solut                  
+        double precision, dimension(:,:), allocatable                 :: dlam                   
+        double precision, dimension(:,:), allocatable                 :: diaglamyiinv           
+        double precision, dimension(:,:), allocatable                 :: dellamyi               
+        double precision, dimension(:,:), allocatable                 :: dxsi                   
+        double precision, dimension(:,:), allocatable                 :: deta                   
+        double precision, dimension(:,:), allocatable                 :: dmu                    
+        double precision                                              :: zet                     
+        double precision                                              :: dzet                   
+        double precision, dimension(:,:), allocatable                 :: ds                     
+        double precision, dimension(:), allocatable                   :: xx                     
+        double precision, dimension(:), allocatable                   :: dxx                    
+        double precision, dimension(:), allocatable                   :: stepxx                 
+        double precision                                              :: stmxx                  
+        double precision, dimension(:,:), allocatable                 :: stepalfa               
+        double precision                                              :: stmalfa                
+        double precision, dimension(:,:), allocatable                 :: stepbeta               
+        double precision                                              :: stmbeta                
+        double precision                                              :: stmalbe                
+        double precision                                              :: stmalbexx              
+        double precision                                              :: stminv                 
+        double precision                                              :: steg                   
+        double precision, dimension(:,:), allocatable                 :: lamold                 
+        double precision, dimension(:,:), allocatable                 :: xsiold                 
+        double precision, dimension(:,:), allocatable                 :: etaold                 
+        double precision, dimension(:,:), allocatable                 :: muold                  
+        double precision                                              :: zetold                 
+        double precision, dimension(:,:), allocatable                 :: sold                   
         ! PROCEDURE
         een = ones(n,1)
         eem = ones(m,1)
@@ -1314,39 +1312,39 @@ contains
         ! residumax  = max(abs(residu))                                                         !
         ! ------------------------------------------------------------------------------------- !
         ! declaration
-        real, dimension(:,:), allocatable, intent(inout)  :: x                      ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: y                      ! 
-        real, intent(inout)                               :: z                      ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: lam                    ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: xsi                    ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: eta                    ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: mu                     !  
-        real, intent(inout)                               :: zet                    ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: s                      !  
-        real, dimension(:,:), allocatable, intent(inout)  :: xmin                   !  
-        real, dimension(:,:), allocatable, intent(inout)  :: xmax                   ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: df0dx                  !
-        real, dimension(:,:), allocatable, intent(inout)  :: fval                   ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: dfdx                   !
-        real, intent(inout)                               :: a0                     ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: a                      ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: c                      ! 
-        real, dimension(:,:), allocatable, intent(inout)  :: d                      !
-        real, dimension(:), allocatable, intent(out)      :: residu                 !
-        real, intent(out)                                 :: residunorm             !
-        real, intent(out)                                 :: residumax              !
-        ! internal variables                                                        !
-        real, dimension(:,:), allocatable                 :: rex                    !
-        real, dimension(:,:), allocatable                 :: rey                    !
-        real                                              :: rez                    !
-        real, dimension(:), allocatable                   :: residu1                !
-        real, dimension(:), allocatable                   :: residu2                !
-        real, dimension(:,:), allocatable                 :: relam                  !
-        real, dimension(:,:), allocatable                 :: rexsi                  !
-        real, dimension(:,:), allocatable                 :: reeta                  !
-        real, dimension(:,:), allocatable                 :: remu                   !
-        real                                              :: rezet                  !
-        real, dimension(:,:), allocatable                 :: res                    !
+        real, dimension(:,:), allocatable, intent(inout)  :: x                      
+        real, dimension(:,:), allocatable, intent(inout)  :: y                      
+        real, intent(inout)                               :: z                       
+        real, dimension(:,:), allocatable, intent(inout)  :: lam                     
+        real, dimension(:,:), allocatable, intent(inout)  :: xsi                     
+        real, dimension(:,:), allocatable, intent(inout)  :: eta                     
+        real, dimension(:,:), allocatable, intent(inout)  :: mu                       
+        real, intent(inout)                               :: zet                     
+        real, dimension(:,:), allocatable, intent(inout)  :: s                        
+        real, dimension(:,:), allocatable, intent(inout)  :: xmin                     
+        real, dimension(:,:), allocatable, intent(inout)  :: xmax                    
+        real, dimension(:,:), allocatable, intent(inout)  :: df0dx                  
+        real, dimension(:,:), allocatable, intent(inout)  :: fval                    
+        real, dimension(:,:), allocatable, intent(inout)  :: dfdx                   
+        real, intent(inout)                               :: a0                      
+        real, dimension(:,:), allocatable, intent(inout)  :: a                       
+        real, dimension(:,:), allocatable, intent(inout)  :: c                       
+        real, dimension(:,:), allocatable, intent(inout)  :: d                      
+        real, dimension(:), allocatable, intent(out)      :: residu                 
+        real, intent(out)                                 :: residunorm             
+        real, intent(out)                                 :: residumax              
+        ! internal variables                                                        
+        real, dimension(:,:), allocatable                 :: rex                    
+        real, dimension(:,:), allocatable                 :: rey                    
+        real                                              :: rez                    
+        real, dimension(:), allocatable                   :: residu1                
+        real, dimension(:), allocatable                   :: residu2                
+        real, dimension(:,:), allocatable                 :: relam                  
+        real, dimension(:,:), allocatable                 :: rexsi                  
+        real, dimension(:,:), allocatable                 :: reeta                  
+        real, dimension(:,:), allocatable                 :: remu                   
+        real                                              :: rezet                  
+        real, dimension(:,:), allocatable                 :: res                    
         ! process
         rex   = df0dx + maxval(matmul(transpose(dfdx),lam)) - xsi + eta
         rey   = c + d*y - mu - lam
@@ -1405,40 +1403,40 @@ contains
         ! residunorm = sqrt(residu'*residu)                                                     !
         ! residumax  = max(abs(residu))                                                         !
         ! ------------------------------------------------------------------------------------- !
-        ! declaration                                                                           !
-        double precision, dimension(:,:), allocatable, intent(inout)  :: x                      ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: y                      ! 
-        double precision, intent(inout)                               :: z                      ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: lam                    ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: xsi                    ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: eta                    ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: mu                     !  
-        double precision, intent(inout)                               :: zet                    ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: s                      !  
-        double precision, dimension(:,:), allocatable, intent(inout)  :: xmin                   !  
-        double precision, dimension(:,:), allocatable, intent(inout)  :: xmax                   ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: df0dx                  !
-        double precision, dimension(:,:), allocatable, intent(inout)  :: fval                   ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: dfdx                   !
-        double precision, intent(inout)                               :: a0                     ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: a                      ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: c                      ! 
-        double precision, dimension(:,:), allocatable, intent(inout)  :: d                      !
-        double precision, dimension(:), allocatable, intent(out)      :: residu                 !
-        double precision, intent(out)                                 :: residunorm             !
-        double precision, intent(out)                                 :: residumax              !
-        ! internal variables                                                                    !
-        double precision, dimension(:,:), allocatable                 :: rex                    !
-        double precision, dimension(:,:), allocatable                 :: rey                    !
-        double precision                                              :: rez                    !
-        double precision, dimension(:), allocatable                   :: residu1                !
-        double precision, dimension(:), allocatable                   :: residu2                !
-        double precision, dimension(:,:), allocatable                 :: relam                  !
-        double precision, dimension(:,:), allocatable                 :: rexsi                  !
-        double precision, dimension(:,:), allocatable                 :: reeta                  !
-        double precision, dimension(:,:), allocatable                 :: remu                   !
-        double precision                                              :: rezet                  !
-        double precision, dimension(:,:), allocatable                 :: res                    !
+        ! declaration                                                                           
+        double precision, dimension(:,:), allocatable, intent(inout)  :: x                       
+        double precision, dimension(:,:), allocatable, intent(inout)  :: y                       
+        double precision, intent(inout)                               :: z                       
+        double precision, dimension(:,:), allocatable, intent(inout)  :: lam                     
+        double precision, dimension(:,:), allocatable, intent(inout)  :: xsi                    
+        double precision, dimension(:,:), allocatable, intent(inout)  :: eta                     
+        double precision, dimension(:,:), allocatable, intent(inout)  :: mu                       
+        double precision, intent(inout)                               :: zet                     
+        double precision, dimension(:,:), allocatable, intent(inout)  :: s                        
+        double precision, dimension(:,:), allocatable, intent(inout)  :: xmin                     
+        double precision, dimension(:,:), allocatable, intent(inout)  :: xmax                    
+        double precision, dimension(:,:), allocatable, intent(inout)  :: df0dx                  
+        double precision, dimension(:,:), allocatable, intent(inout)  :: fval                    
+        double precision, dimension(:,:), allocatable, intent(inout)  :: dfdx                   
+        double precision, intent(inout)                               :: a0                      
+        double precision, dimension(:,:), allocatable, intent(inout)  :: a                       
+        double precision, dimension(:,:), allocatable, intent(inout)  :: c                       
+        double precision, dimension(:,:), allocatable, intent(inout)  :: d                      
+        double precision, dimension(:), allocatable, intent(out)      :: residu                 
+        double precision, intent(out)                                 :: residunorm             
+        double precision, intent(out)                                 :: residumax              
+        ! internal variables                                                                    
+        double precision, dimension(:,:), allocatable                 :: rex                    
+        double precision, dimension(:,:), allocatable                 :: rey                    
+        double precision                                              :: rez                    
+        double precision, dimension(:), allocatable                   :: residu1               
+        double precision, dimension(:), allocatable                   :: residu2               
+        double precision, dimension(:,:), allocatable                 :: relam                  
+        double precision, dimension(:,:), allocatable                 :: rexsi                  
+        double precision, dimension(:,:), allocatable                 :: reeta                  
+        double precision, dimension(:,:), allocatable                 :: remu                   
+        double precision                                              :: rezet                  
+        double precision, dimension(:,:), allocatable                 :: res                    
         ! process
         rex   = df0dx + maxval(matmul(transpose(dfdx),lam)) - xsi + eta
         rey   = c + d*y - mu - lam
