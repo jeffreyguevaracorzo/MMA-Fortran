@@ -2,7 +2,7 @@
 CC = gfortran
 CFLAGS = -O1 -fbounds-check -fbacktrace -fcheck=all -g -Wall -Wextra -Wrealloc-lhs-all
 TARGET = Execute
-EXT = -fopenmp -llapack -lblas
+EXT = -llapack -lblas
 FILES = MMA_Routines.f90 \
 		MMA_Variables.f90 \
 		MMA_Main.f90
