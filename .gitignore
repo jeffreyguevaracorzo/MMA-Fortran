@@ -1,0 +1,4 @@
+# ignore .mod and .o file generated in the compilation
+*.mod
+*.o
+Execute
