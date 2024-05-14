@@ -1,44 +1,41 @@
 module MMA_variables
-
     implicit none
-    ! --------------------------------------------------------------- !
-    integer                               :: m                        ! 
-    integer                               :: n                        !
-    integer                               :: kkttol                   !
-    integer                               :: maxoutit                 !
-    integer                               :: outeriter                !
-    integer                               :: outit                    !
-    real                                  :: a0                       ! 
-    real                                  :: epsimin                  ! 
-    real                                  :: kktnorm                  !
-    real                                  :: residumax                !
-    real, dimension(:), allocatable       :: residu                   !
-    real, dimension(:), allocatable       :: outvector1               !
-    real, dimension(:), allocatable       :: outvector2               !
-    real, dimension(:,:), allocatable     :: a                        ! 
-    real, dimension(:,:), allocatable     :: c                        ! 
-    real, dimension(:,:), allocatable     :: d                        ! 
-    real, dimension(:,:), allocatable     :: xmma                     ! 
-    real, dimension(:,:), allocatable     :: ymma                     ! 
-    real                                  :: zmma                     ! 
-    real, dimension(:,:), allocatable     :: lam                      ! 
-    real, dimension(:,:), allocatable     :: xsi                      ! 
-    real, dimension(:,:), allocatable     :: eta                      ! 
-    real, dimension(:,:), allocatable     :: mu                       ! 
-    real                                  :: zet                      ! 
-    real, dimension(:,:), allocatable     :: s                        ! 
-    real                                  :: f0val                    ! 
-    real, dimension(:,:), allocatable     :: fval                     ! 
-    real, dimension(:,:), allocatable     :: xval                     ! 
-    real, dimension(:,:), allocatable     :: xmax                     ! 
-    real, dimension(:,:), allocatable     :: xmin                     ! 
-    real, dimension(:,:), allocatable     :: xold1                    !  
-    real, dimension(:,:), allocatable     :: xold2                    ! 
-    real, dimension(:,:), allocatable     :: df0dx                    ! 
-    real, dimension(:,:), allocatable     :: dfdx                     ! 
-    real, dimension(:,:), allocatable     :: low                      ! 
-    real, dimension(:,:), allocatable     :: upp                      ! 
-    ! --------------------------------------------------------------- !
+    integer                               :: m                        
+    integer                               :: n                        
+    integer                               :: kkttol                   
+    integer                               :: maxoutit                 
+    integer                               :: outeriter                
+    integer                               :: outit                   
+    real                                  :: a0                       
+    real                                  :: epsimin                   
+    real                                  :: kktnorm                  
+    real                                  :: residumax                
+    real, dimension(:), allocatable       :: residu                   
+    real, dimension(:), allocatable       :: outvector1               
+    real, dimension(:), allocatable       :: outvector2               
+    real, dimension(:,:), allocatable     :: a                         
+    real, dimension(:,:), allocatable     :: c                         
+    real, dimension(:,:), allocatable     :: d                         
+    real, dimension(:,:), allocatable     :: xmma                      
+    real, dimension(:,:), allocatable     :: ymma                      
+    real                                  :: zmma                      
+    real, dimension(:,:), allocatable     :: lam                       
+    real, dimension(:,:), allocatable     :: xsi                       
+    real, dimension(:,:), allocatable     :: eta                       
+    real, dimension(:,:), allocatable     :: mu                        
+    real                                  :: zet                       
+    real, dimension(:,:), allocatable     :: s                         
+    real                                  :: f0val                     
+    real, dimension(:,:), allocatable     :: fval                      
+    real, dimension(:,:), allocatable     :: xval                      
+    real, dimension(:,:), allocatable     :: xmax                      
+    real, dimension(:,:), allocatable     :: xmin                      
+    real, dimension(:,:), allocatable     :: xold1                      
+    real, dimension(:,:), allocatable     :: xold2                     
+    real, dimension(:,:), allocatable     :: df0dx                     
+    real, dimension(:,:), allocatable     :: dfdx                      
+    real, dimension(:,:), allocatable     :: low                       
+    real, dimension(:,:), allocatable     :: upp                       
 
 contains
 
@@ -76,5 +73,4 @@ contains
         dfdx(1,:) = 2.0*[x(1,1) - 5.0,x(2,1) - 2.0,x(3,1) - 1.0]
         dfdx(2,:) = 2.0*[x(1,1) - 3.0,x(2,1) - 4.0,x(3,1) - 3.0]    
     end subroutine ObjectiveFunction
-
 end module MMA_variables
