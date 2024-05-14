@@ -36,16 +36,7 @@ module MMA_Routines
         module procedure KKTCheckReal
         module procedure KKTCheckDP
     end interface KKTCheck
-    ! Topology optimization process
-    interface MMA_Solver
-        module procedure MMA_SolverReal
-        module procedure MMA_SolverDP
-    end interface MMA_Solver
-    ! console printing (do not include this interface)
-    interface ConsolePrinting
-        module procedure ConsolePrintingReal
-        module procedure ConsolePrintingDP
-    end interface ConsolePrinting
+    
 contains
 
     ! zeros
@@ -1504,42 +1495,4 @@ contains
         end if
         X = B
     end function SolverDP
-
-    ! interface para optimization topologica
-    subroutine MMA_SolverReal(DensityVector,VolumeVector,Compliance,DiffCompliance)
-        implicit none
-        Real, dimension(:), allocatable, intent(in)               :: DensityVector
-        real, dimension(:), allocatable, intent(in)               :: VolumeVector
-        real, dimension(:), allocatable, intent(in)               :: Compliance
-        real, dimension(:), allocatable, intent(in)               :: DiffCompliance
-        write(unit=*, fmt=*) 'Programa de ensamblado'
-    end subroutine MMA_SolverReal
-
-    subroutine MMA_SolverDP(DensityVector,VolumeVector,Compliance,DiffCompliance)
-        implicit none
-        double precision, dimension(:), allocatable, intent(in)   :: DensityVector
-        double precision, dimension(:), allocatable, intent(in)   :: VolumeVector
-        double precision, dimension(:), allocatable, intent(in)   :: Compliance
-        double precision, dimension(:), allocatable, intent(in)   :: DiffCompliance
-        write(unit=*, fmt=*) 'Programa de ensamblado'
-    end subroutine MMA_SolverDP
-
-    ! console printing
-    subroutine ConsolePrintingReal(ArrayIn)
-        implicit none
-        real, dimension(:,:), allocatable, intent(in)   :: ArrayIn
-        integer                                         :: i
-        do i = 1, size(ArrayIn,1), 1
-            write(unit=*, fmt=*) ArrayIn(i,:)
-        end do
-    end subroutine ConsolePrintingReal
-
-    subroutine ConsolePrintingDP(ArrayIn)
-        implicit none
-        double precision, dimension(:,:), allocatable, intent(in)   :: ArrayIn
-        integer                                         :: i
-        do i = 1, size(ArrayIn,1), 1
-            write(unit=*, fmt=*) ArrayIn(i,:)
-        end do
-    end subroutine ConsolePrintingDP
 end module MMA_Routines
